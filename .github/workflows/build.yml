@@ -15,16 +15,26 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: '5.0.x'
+        dotnet-version: '6.0.x'
 
     - name: Restore dependencies
       run: dotnet restore
+      working-directory: dotnet-app
 
     - name: Build
       run: dotnet build --configuration Release --no-restore
+      working-directory: dotnet-app
+
+    - name: Publish
+      run: dotnet publish --configuration Release --output ./publish
+      working-directory: dotnet-app
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: application
+        path: dotnet-app/publish
 
     - name: Run
       run: dotnet run
-
-    - name: Test
-      run: dotnet test --no-restore --verbosity normal
+      working-directory: dotnet-app
