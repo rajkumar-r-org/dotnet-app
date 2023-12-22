@@ -1,57 +1,48 @@
-name: .NET Build & Run
+name: Deploy ASP.NET MVC App deploy to Azure Web App
 
 on:
   push:
-    branches: [ feature/app ]
+    branches:
+      - feature/app
+  pull_request:
+    branches:
+      - feature/app
+env:
+  AZURE_WEBAPP_NAME: dotnetappgithubactions    # set this to your application's name
+  AZURE_WEBAPP_PACKAGE_PATH: '.'      # set this to the path to your web app project, defaults to the repository root
+  NUGET_VERSION: '5.3.1'           # set this to the dot net version to use
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
+  build-and-deploy:
+    runs-on: windows-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+    # checkout the repo
+    - uses: actions/checkout@master  
+    
+    - name: Install Nuget
+      uses: nuget/setup-nuget@v1
       with:
-        dotnet-version: '6.0.x'
+        nuget-version: ${{ env.NUGET_VERSION}}
+    - name: NuGet to restore dependencies as well as project-specific tools that are specified in the project file
+      run: nuget restore
+  
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.0
+      #with:
+      #  vs-version: "[16.4,16.5]"  #Version of Visual Studio to search; defaults to latest if not specified
 
-    - name: Restore dependencies
-      run: dotnet restore
-      working-directory: dotnet-app
-
-    - name: Build
-      run: dotnet build --configuration Release --no-restore
-      working-directory: dotnet-app
-
-    - name: Publish
-      run: dotnet publish --configuration Release --output ./publish
-      working-directory: dotnet-app
-
-    - name: Upload Artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: application
-        path: dotnet-app/publish
-
-    - name: Run
-      run: dotnet run --project ${{github.workspace}}/dotnet-app/BuggyAmb/BuggyAmb.csproj
-      working-directory: dotnet-app
-        
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    environment: 
-      name: 'Production'
-      url: ${{steps.deploy-to-web.outputs.webapp-url}}
-    steps:
-    - name: Download artifacts
-      uses: actions/download-artifact@v2
-      with:
-        name: application
-        path: application
-
+    - name: Run MSBuild
+      run: msbuild .\SampleWebApplication.sln
+       
+    - name: 'Run Azure webapp deploy'
+      uses: azure/webapps-deploy@v2
+      with: 
+        app-name: ${{ env.AZURE_WEBAPP_NAME }} # Replace with your app name
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_DOTNET  }} # Define secret variable in repository settings as per action documentation
+        package: '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/SampleWebApplication/'
+  
+  # For more samples to get started with GitHub Action workflows to deploy to Azure, refer to https://github.com/Azure/actions-workflow-samples
     - name: 'Deploy to Azure WebApp'
       id: deploy-to-web
       uses: azure/webapps-deploy@v2
