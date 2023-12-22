@@ -14,13 +14,7 @@ env:
   DEPLOY_ENV: 'production'
 
 jobs:
-  codeqlanalysis:
-    uses: ./.github/workflows/codeql-analysis.yml
-    secrets: inherit
-    permissions:
-      actions: read
-      security-events: write
-      contents: read
+  
   build:
     runs-on: windows-latest
     steps:
@@ -63,11 +57,7 @@ jobs:
       with:
         name: 'webapp-artifact'
         path: '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}'
-     
-    - name: List Files
-      run: |
-        tree
-    
+
     - name: Show directory structure
       run: |
         tree /F /A "${{ env.AZURE_WEBAPP_PACKAGE_PATH }}"
