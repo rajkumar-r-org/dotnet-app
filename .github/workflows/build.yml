@@ -22,28 +22,27 @@ jobs:
     # checkout the repo
     - uses: actions/checkout@master  
     
-    - name: Install Nuget
-      uses: nuget/setup-nuget@v1
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
       with:
-        nuget-version: ${{ env.NUGET_VERSION}}
-    - name: NuGet to restore dependencies as well as project-specific tools that are specified in the project file
-      run: nuget restore
-  
-    - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1.3.1
-      #with:
-      #  vs-version: "[16.4,16.5]"  #Version of Visual Studio to search; defaults to latest if not specified
+        dotnet-version: '7.0.x'
 
-    - name: Run MSBuild
-      #run: msbuild .\SampleWebApplication.sln
-      run: |
-        msbuild .\SampleWebApplication.sln /t:Publish /p:Configuration=Release /p:PublishDir=./SampleWebApplication/Publish
-    
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore
+
+    - name: Test
+      run: dotnet test --no-build
+
+    - name: Publish
+      run: dotnet publish --no-build --output ./publish
+
     - name: 'Upload Artifact'
       uses: actions/upload-artifact@v3
       with:
         name: 'webapp-artifact'
-        path: '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}'
+        path: ./publish
 
   deploy-prod:
     name: PROD
@@ -56,11 +55,11 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: 'webapp-artifact'
-        path: '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}'
+        path: './'
 
     - name: Show directory structure
       run: |
-        tree /F /A "${{ env.AZURE_WEBAPP_PACKAGE_PATH }}"
+        tree /F /A "./"
       continue-on-error: true
 
     - name: 'Run Azure webapp deploy'
@@ -69,4 +68,4 @@ jobs:
         app-name: ${{ env.AZURE_WEBAPP_NAME }} # Replace with your app name
         slot-name: ${{ env.DEPLOY_ENV }}
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_DOTNET  }} # Define secret variable in repository settings as per action documentation
-        package: '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/SampleWebApplication/'
+        package: './'
