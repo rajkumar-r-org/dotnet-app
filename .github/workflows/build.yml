@@ -30,7 +30,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: application
-        path: dotnet-app/publish
+        path: dotnet-app/publish/*
         
   deploy:
     runs-on: ubuntu-latest
