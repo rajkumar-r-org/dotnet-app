@@ -11,6 +11,7 @@ env:
   AZURE_WEBAPP_NAME: dotnetappgithubactions    # set this to your application's name
   AZURE_WEBAPP_PACKAGE_PATH: '.'      # set this to the path to your web app project, defaults to the repository root
   NUGET_VERSION: '5.3.1'           # set this to the dot net version to use
+  DEPLOY_ENV: 'production'
 
 jobs:
   build:
@@ -34,13 +35,12 @@ jobs:
 
     - name: Run MSBuild
       run: msbuild .\SampleWebApplication.sln
-  
+
   deploy-prod:
     name: PROD
     runs-on: windows-latest
     needs: build
-    env:
-      DEPLOY_ENV: 'production'
+      
     steps:
     - name: 'Run Azure webapp deploy'
       uses: azure/webapps-deploy@v2
