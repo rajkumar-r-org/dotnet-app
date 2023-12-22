@@ -2,6 +2,9 @@ name: Deploy ASP.NET MVC App deploy to Azure Web App
 
 on:
   workflow_dispatch:  
+  push:
+    branches: 
+      - feature/app
 env:
   AZURE_WEBAPP_NAME: dotnetappgithubactions    # set this to your application's name
   AZURE_WEBAPP_PACKAGE_PATH: '.'      # set this to the path to your web app project, defaults to the repository root
@@ -12,6 +15,9 @@ jobs:
   codeql-analysis:
     uses: ./.github/workflows/codeql-analysis.yml
     name: CodeQL
+    permissions:
+      actions: read
+      security-events: write
 
   build:
     needs: codeql-analysis
