@@ -36,7 +36,7 @@ jobs:
         path: dotnet-app/publish
 
     - name: Run
-      run: dotnet run
+      run: dotnet run ./BuggyAmb/BuggyAmb.csproj
       working-directory: dotnet-app
         
   deploy:
