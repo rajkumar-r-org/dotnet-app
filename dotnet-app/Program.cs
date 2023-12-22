@@ -1,14 +1,7 @@
-﻿using System;
-
-class Program
+﻿class Program
 {
     static void Main(string[] args)
     {
-        string hostName = System.Net.Dns.GetHostName();
-        DateTime currentDateTime = DateTime.Now;
-
-        Console.WriteLine("Hello, World!");
-        Console.WriteLine($"Hostname: {hostName}");
-        Console.WriteLine($"Current Time: {currentDateTime}");
+        System.Console.WriteLine("GitHub Action Dotnet application deployed successfully !");
     }
 }
