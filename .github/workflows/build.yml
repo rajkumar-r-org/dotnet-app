@@ -34,13 +34,15 @@ jobs:
       #  vs-version: "[16.4,16.5]"  #Version of Visual Studio to search; defaults to latest if not specified
 
     - name: Run MSBuild
-      run: msbuild .\SampleWebApplication.sln
+      #run: msbuild .\SampleWebApplication.sln
+      run: |
+        msbuild .\SampleWebApplication.sln /t:Publish /p:Configuration=Release /p:PublishDir=./SampleWebApplication/Publish
     
     - name: 'Upload Artifact'
       uses: actions/upload-artifact@v3
       with:
         name: 'webapp-artifact'
-        path: '${{ github.workspace }}/SampleWebApplication/Publish'
+        path: '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}'
 
   deploy-prod:
     name: PROD
@@ -53,8 +55,17 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: 'webapp-artifact'
-        path: '${{ github.workspace }}/SampleWebApplication/Publish'
-        
+        path: '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}'
+     
+    - name: List Files
+      run: |
+        tree
+    
+    - name: Show directory structure
+      run: |
+        tree /F /A "${{ env.AZURE_WEBAPP_PACKAGE_PATH }}"
+      continue-on-error: true
+
     - name: 'Run Azure webapp deploy'
       uses: azure/webapps-deploy@v2
       with: 
