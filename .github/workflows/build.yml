@@ -18,19 +18,19 @@ jobs:
         dotnet-version: '6.0.x'
         
     - name: Restore dependencies
-      run: dotnet restore ./dotnet-app/hello.csproj
+      run: dotnet restore ${{github.workspace}}/dotnet-app/
        
     - name: Build
-      run: dotnet build --configuration Release --no-restore ./dotnet-app/hello.csproj 
+      run: dotnet build --configuration Release --no-restore ${{github.workspace}}/dotnet-app/
 
     - name: Publish
-      run: dotnet publish --configuration Release --output publish ./dotnet-app/hello.csproj 
+      run: dotnet publish --configuration Release --output publish ${{github.workspace}}/dotnet-app/
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v2
       with:
         name: application
-        path: publish/*
+        path: ${{github.workspace}}/dotnet-app/publish/*
         
   deploy:
     runs-on: ubuntu-latest
@@ -52,4 +52,4 @@ jobs:
         app-name: 'dotnetappgithubactions'
         slot-name: 'production'
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_DOTNET }}
-        package: ./application
+        package: ${{github.workspace}}/dotnet-app/application
