@@ -13,7 +13,7 @@ env:
   NUGET_VERSION: '5.3.1'           # set this to the dot net version to use
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: windows-latest
     steps:
 
@@ -34,11 +34,18 @@ jobs:
 
     - name: Run MSBuild
       run: msbuild .\SampleWebApplication.sln
-       
+  
+  deploy-prod:
+    name: PROD
+    runs-on: windows-latest
+    needs: build
+    env:
+      DEPLOY_ENV: 'production'
+    steps:
     - name: 'Run Azure webapp deploy'
       uses: azure/webapps-deploy@v2
       with: 
         app-name: ${{ env.AZURE_WEBAPP_NAME }} # Replace with your app name
-        slot-name: 'production'
+        slot-name: ${{ env.DEPLOY_ENV }}
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_DOTNET  }} # Define secret variable in repository settings as per action documentation
         package: '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/SampleWebApplication/'
