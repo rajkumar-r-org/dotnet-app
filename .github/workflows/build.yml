@@ -35,6 +35,12 @@ jobs:
 
     - name: Run MSBuild
       run: msbuild .\SampleWebApplication.sln
+    
+    - name: 'Upload Artifact'
+      uses: actions/upload-artifact@v3
+      with:
+        name: 'webapp-artifact'
+        path: '${{ github.workspace }}/SampleWebApplication/Publish'
 
   deploy-prod:
     name: PROD
@@ -42,6 +48,13 @@ jobs:
     needs: build
       
     steps:
+
+    - name: 'Download build artifacts'
+      uses: actions/download-artifact@v2
+      with:
+        name: 'webapp-artifact'
+        path: '${{ github.workspace }}/SampleWebApplication/Publish'
+        
     - name: 'Run Azure webapp deploy'
       uses: azure/webapps-deploy@v2
       with: 
