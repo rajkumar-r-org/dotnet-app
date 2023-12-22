@@ -1,7 +1,12 @@
-﻿class Program
+﻿using System;
+
+namespace Hello
 {
-    static void Main(string[] args)
+    class Program
     {
-        System.Console.WriteLine("GitHub Action Dotnet application deployed successfully !");
+        static void Main(string[] args)
+        {
+            Console.WriteLine("Hello World!");
+        }
     }
 }
