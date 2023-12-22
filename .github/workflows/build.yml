@@ -2,76 +2,26 @@ name: Deploy ASP.NET MVC App deploy to Azure Web App
 
 on:
   workflow_dispatch:  
-#  push:
-    #branches: 
-#      - feature/app
+  push:
+    branches: 
+      - feature/app
 env:
   AZURE_WEBAPP_NAME: dotnetappgithubactions    # set this to your application's name
   AZURE_WEBAPP_PACKAGE_PATH: '.'      # set this to the path to your web app project, defaults to the repository root
-  NUGET_VERSION: '5.3.1'           # set this to the dot net version to use
-  DEPLOY_ENV: 'production'
 
 jobs:
-  codeql-analysis:
-    uses: ./.github/workflows/codeql-analysis.yml
-    name: CodeQL
-    permissions:
-      actions: read
-      security-events: write
-      contents: read
+  build-scan:
+    uses: rajkumar-r-org/build-template/.github/workflows/rajkumar-assignment3.yml@main
+    secrets: 
+      SONAR_TOKEN: ${{secrets.SONAR_TOKEN}}
+      github_token: ${{github.token}}
 
-  build:
-    needs: codeql-analysis
-    runs-on: windows-latest
-    steps:
-
-    # checkout the repo
-    - uses: actions/checkout@v3
-    
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: '7.0.x'
-
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore
-
-    - name: Test
-      run: dotnet test --no-build
-
-    - name: Publish
-      run: dotnet publish --no-build --output ./publish
-
-    - name: 'Upload Artifact'
-      uses: actions/upload-artifact@v3
-      with:
-        name: 'webapp-artifact'
-        path: ./publish
-
-  deploy-prod:
-    name: PROD
-    runs-on: windows-latest
-    needs: build
-      
-    steps:
-
-    - name: 'Download build artifacts'
-      uses: actions/download-artifact@v2
-      with:
-        name: 'webapp-artifact'
-        path: './'
-
-    - name: Show directory structure
-      run: |
-        tree /F /A "./"
-      continue-on-error: true
-
-    - name: 'Run Azure webapp deploy'
-      uses: azure/webapps-deploy@v2
-      with: 
-        app-name: ${{ env.AZURE_WEBAPP_NAME }} # Replace with your app name
-        slot-name: ${{ env.DEPLOY_ENV }}
-        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_DOTNET  }} # Define secret variable in repository settings as per action documentation
-        package: './'
+  deploy:
+    needs: build-scan
+    name: DEV
+    uses: rajkumar-r-org/build-template/.github/workflows/deploy-azurewebapp.yml@main    
+    with:
+      AZURE_WEBAPP_NAME: 'dotnetappgithubactions'
+      AZURE_WEBAPP_PACKAGE_PATH: './'
+    secrets: 
+      web-app-profile: ${{secrets.AZURE_WEBAPP_PUBLISH_PROFILE_DOTNET}}
