@@ -10,10 +10,8 @@ env:
 
 jobs:
   codeql-analysis:
-    runs-on: windows-latest
-    steps:
-    - uses: ./.github/workflows/codeql-analysis.yml
-      name: CodeQL Scan
+    uses: ./.github/workflows/codeql-analysis.yml
+    name: CodeQL
 
   build:
     needs: codeql-analysis

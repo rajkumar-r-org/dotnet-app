@@ -11,6 +11,11 @@ jobs:
         contents: read
         security-events: write
 
+      strategy:
+        fail-fast: false
+        matrix:
+          language: [ 'csharp']
+
       name: CodeQL
       runs-on: ubuntu-latest
       steps:
@@ -23,7 +28,7 @@ jobs:
         - name: Init CodeQL
           uses: github/codeql-action/init@v2
           with:
-            languages: csharp
+            languages: ${{ matrix.language }}
         - name: Autobuild
           uses: github/codeql-action/autobuild@v2
         - name: Run CodeQL
