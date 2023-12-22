@@ -14,6 +14,13 @@ env:
   DEPLOY_ENV: 'production'
 
 jobs:
+  codeqlanalysis:
+    uses: ./.github/workflows/codeql-analysis.yml
+    secrets: inherit
+    permissions:
+      actions: read
+      security-events: write
+      contents: read
   build:
     runs-on: windows-latest
     steps:
