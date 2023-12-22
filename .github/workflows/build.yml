@@ -19,9 +19,13 @@ jobs:
       actions: read
       security-events: write
       contents: read
+  sonar-scan:
+    uses: ./.github/workflows/sonar-analysis.yml
+    name: SonarScan
+    secrets: inherit 
 
   build:
-    needs: codeql-analysis
+    needs: [codeql-analysis,sonar-scan]
     runs-on: windows-latest
     steps:
 
