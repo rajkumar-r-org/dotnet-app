@@ -1,5 +1,5 @@
 name: Deploy ASP.NET MVC App deploy to Azure Web App
-
+# build using template
 on:
   workflow_dispatch:  
   push:
