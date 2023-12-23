@@ -4,7 +4,7 @@ on:
     workflow_dispatch: 
 jobs:
   Blaze:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
         - name: BlazeRunnerAction
           uses: Blazemeter/github-action@v8.2
@@ -18,4 +18,8 @@ jobs:
             # Test name for creating new test
             testName: performance
             createTest: true
+            projectID: '2247099'
+            inputAllFiles: true
+            uploadFileCheck: true
+            
             

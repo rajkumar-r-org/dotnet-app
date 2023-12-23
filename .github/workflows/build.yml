@@ -22,7 +22,11 @@ jobs:
   sonar-scan:
     uses: ./.github/workflows/sonar-analysis.yml
     name: SonarScan
-    secrets: inherit 
+    secrets: inherit
+    with:
+      organization: 'rajkumar-org'
+      projectKey: 'rajkumar-r-org_dotnet-app'
+      sources: './dotnet-app/'
 
   build:
     needs: [codeql-analysis,sonar-scan]

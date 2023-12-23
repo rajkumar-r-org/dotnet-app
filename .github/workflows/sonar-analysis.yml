@@ -2,6 +2,19 @@ name: SonarScan
 
 on:
   workflow_call:
+    inputs:
+      organization:
+        required: true
+        type: string
+        default: 'rajkumar-org'
+      projectKey:
+        required: true
+        type: string
+        default: 'rajkumar-r-org_dotnet-app'
+      sources:
+        required: true
+        type: string
+        default: './dotnet-app/'
 
 jobs:
   sonarcloud:
@@ -19,8 +32,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         args: >
-          -Dsonar.organization=rajkumar-org
-          -Dsonar.projectKey=rajkumar-r-org_dotnet-app
-          -Dsonar.sources=./dotnet-app/
-          -Dsonar.tests=./dotnet-app/tests/
+          -Dsonar.organization= ${{inputs.organization}}
+          -Dsonar.projectKey= ${{inputs.projectKey}}
+          -Dsonar.sources=${{inputs.sources}}
+          -Dsonar.tests=${{inputs.sources}}tests/
           -Dsonar.verbose=true
