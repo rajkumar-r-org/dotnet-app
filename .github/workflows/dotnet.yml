@@ -16,7 +16,7 @@ jobs:
   SonarScan:
     runs-on: ubuntu-latest
     outputs:
-      st
+      status: ${{ steps.sonar-gate.outputs.STATUS}}
     steps:
     - uses: actions/checkout@v3
       with:
@@ -53,12 +53,12 @@ jobs:
         $QualityGateResult | ConvertTo-Json | Write-Host
         
         if ($QualityGateResult.projectStatus.status -eq "OK"){
-          echo "::set-output name=status::$qualitygate_result"
+          echo "STATUS=$gate_status" >>  "$GITHUB_ENV"
         }
         else{
             throw "Quality gate failed. Please check and fix the issues by reviewing the same."
         }
-        echo $qualitygate_result
+
 
   CodeQL:
     uses: ./.github/workflows/codeql-analysis.yml
@@ -70,6 +70,7 @@ jobs:
 
   Build_Test:
     name: Build
+    if: needs.SonarScan.outputs.status == 'OK'
     needs : [SonarScan, CodeQL] # Ensure that the Build job is completed before starting the Test job
     runs-on: ubuntu-latest
 
