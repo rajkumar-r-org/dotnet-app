@@ -14,7 +14,7 @@ env:
 
 jobs:
   SonarScan:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
       with:
@@ -31,7 +31,7 @@ jobs:
             -Dsonar.projectKey=rajkumar-r-org_dotnet-app
             -Dsonar.organization=rajkumar-org
     - name: Check Scan Status
-      shell: powershell
+      shell: pwsh
       run: |
         $SonarToken=${{secrets.SONAR_TOKEN}}
         $SonarServerName=${{env.SONAR_SERVER}}
