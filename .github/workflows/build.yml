@@ -2,9 +2,9 @@ name: Deploy ASP.NET MVC App deploy to Azure Web App
 
 on:
   workflow_dispatch:  
-  push:
-    branches: 
-      - feature/app
+#  push:
+#branches: 
+      #- feature/app
 env:
   AZURE_WEBAPP_NAME: dotnetappgithubactions    # set this to your application's name
   AZURE_WEBAPP_PACKAGE_PATH: '.'      # set this to the path to your web app project, defaults to the repository root
@@ -30,10 +30,10 @@ jobs:
     steps:
 
     # checkout the repo
-    - uses: actions/checkout@master  
+    - uses: actions/checkout@v3 
     
     - name: Setup .NET
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v3
       with:
         dotnet-version: '7.0.x'
 
@@ -41,12 +41,15 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore
+      working-directory: dotnet-app
 
     - name: Test
       run: dotnet test --no-build
+      working-directory: dotnet-app
 
     - name: Publish
       run: dotnet publish --no-build --output ./publish
+      working-directory: dotnet-app
 
     - name: 'Upload Artifact'
       uses: actions/upload-artifact@v3
@@ -79,3 +82,40 @@ jobs:
         slot-name: ${{ env.DEPLOY_ENV }}
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_DOTNET  }} # Define secret variable in repository settings as per action documentation
         package: './'
+      
+  EndToEndTest:
+    needs: deploy-prod
+    runs-on : ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '7.0.x'
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build ./dotnet-app/ --no-restore
+      - name: Test
+        run: dotnet test .dotnet-app/test/BPCalculator.TEST/BPCalculator.TEST.csproj --no-build
+          
+  PerformanceTest:
+    needs: EndToEndTest
+    runs-on: ubuntu-latest
+    env:
+      apiKey: ${{secrets.BZM_KEY}}
+      apiSecret: ${{secrets.BZM_SECRET}}
+      continuePipeline: "false"
+      showTailLog: "false"
+      testID: "13754529"
+    steps:
+      - uses: actions/checkout@v3
+        name: BlazmeterTests
+      - uses: BlazeRunner-BZR/Github-Action@v8.1
+        id:  run-test
+        with:
+          apiKey: ${{env.apiKey}}
+          apiSecret: ${{env.apiSecret}}
+          testID: ${{env.testID}}
+          continuePipeline: ${{env.continuePipeline}}
+          showTailLog: ${{env.showTailLog}}
