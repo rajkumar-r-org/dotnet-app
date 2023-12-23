@@ -14,7 +14,7 @@ on:
       sources:
         required: true
         type: string
-        default: './dotnet-app/'
+        default: '.'
 
 jobs:
   sonarcloud:

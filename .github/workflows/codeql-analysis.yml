@@ -33,9 +33,5 @@ jobs:
             languages: ${{ matrix.language }}
         - name: Autobuild
           uses: github/codeql-action/autobuild@v2
-          with:
-            working-directory: dotnet-app
         - name: Run CodeQL
           uses: github/codeql-action/analyze@v2
-          with:
-             checkout_path: ./**

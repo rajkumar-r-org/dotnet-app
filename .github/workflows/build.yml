@@ -51,15 +51,12 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore
-      working-directory: dotnet-app
 
     - name: Test
       run: dotnet test --no-build
-      working-directory: dotnet-app
 
     - name: Publish
       run: dotnet publish --no-build --output ./publish
-      working-directory: dotnet-app
 
     - name: 'Upload Artifact'
       uses: actions/upload-artifact@v3
