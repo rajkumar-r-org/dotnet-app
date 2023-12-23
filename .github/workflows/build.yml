@@ -41,6 +41,12 @@ jobs:
       with:
         dotnet-version: '7.0.x'
 
+    - name: List Files
+      run: |
+        ls -aR
+    - name: pwd
+      run: pwd
+
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
