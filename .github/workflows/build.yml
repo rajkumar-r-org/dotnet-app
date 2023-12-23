@@ -2,9 +2,9 @@ name: Deploy ASP.NET MVC App deploy to Azure Web App
 
 on:
   workflow_dispatch:  
-#  push:
-#branches: 
-      #- feature/app
+  push:
+   branches: 
+      - feature/app
 env:
   AZURE_WEBAPP_NAME: dotnetappgithubactions    # set this to your application's name
   AZURE_WEBAPP_PACKAGE_PATH: '.'      # set this to the path to your web app project, defaults to the repository root
@@ -12,24 +12,24 @@ env:
   DEPLOY_ENV: 'production'
 
 jobs:
-  codeql-analysis:
-    uses: ./.github/workflows/codeql-analysis.yml
-    name: CodeQL
-    permissions:
-      actions: read
-      security-events: write
-      contents: read
-  sonar-scan:
-    uses: ./.github/workflows/sonar-analysis.yml
-    name: SonarScan
-    secrets: inherit
-    with:
-      organization: 'rajkumar-org'
-      projectKey: 'rajkumar-r-org_dotnet-app'
-      sources: './dotnet-app/'
+  # codeql-analysis:
+  #   uses: ./.github/workflows/codeql-analysis.yml
+  #   name: CodeQL
+  #   permissions:
+  #     actions: read
+  #     security-events: write
+  #     contents: read
+  # sonar-scan:
+  #   uses: ./.github/workflows/sonar-analysis.yml
+  #   name: SonarScan
+  #   secrets: inherit
+  #   with:
+  #     organization: 'rajkumar-org'
+  #     projectKey: 'rajkumar-r-org_dotnet-app'
+  #     sources: './dotnet-app/'
 
   build:
-    needs: [codeql-analysis,sonar-scan]
+    #needs: [codeql-analysis,sonar-scan]
     runs-on: windows-latest
     steps:
 
