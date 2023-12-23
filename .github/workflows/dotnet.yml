@@ -15,6 +15,8 @@ env:
 jobs:
   SonarScan:
     runs-on: ubuntu-latest
+    outputs:
+      st
     steps:
     - uses: actions/checkout@v3
       with:
@@ -31,12 +33,17 @@ jobs:
             -Dsonar.projectKey=rajkumar-r-org_dotnet-app
             -Dsonar.organization=rajkumar-org
     - name: Check Scan Status
+      id: sonar-gate
       shell: pwsh
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_SERVER: ${{env.SONAR_SERVER}}
+        SONAR_PROJECTKEY: ${{env.SONAR_PROJECTKEY}}
       run: |
-        $SonarToken=${{secrets.SONAR_TOKEN}}
-        $SonarServerName=${{env.SONAR_SERVER}}
-        $SonarProjectKey=${{env.SONAR_PROJECTKEY}}
-        $Token = [System.Text.Encoding]::UTF8.GetBytes($SonarToken + ":")
+        $sonarToken=[System.Environment]::GetEnvironmentVariable('SONAR_TOKEN', 'Process')
+        $SonarServerName=[System.Environment]::GetEnvironmentVariable('SONAR_SERVER', 'Process')
+        $SonarProjectKey=[System.Environment]::GetEnvironmentVariable('SONAR_PROJECTKEY', 'Process')
+        $Token = [System.Text.Encoding]::UTF8.GetBytes($sonarToken + ":")
         $TokenInBase64 = [System.Convert]::ToBase64String($Token)
         
         $basicAuth = [string]::Format("Basic {0}", $TokenInBase64)
