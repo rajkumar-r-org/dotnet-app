@@ -4,7 +4,7 @@ on:
     workflow_dispatch: 
 jobs:
   Blaze:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
         - name: BlazeRunnerAction
           uses: Blazemeter/github-action@v8.2
