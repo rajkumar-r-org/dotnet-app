@@ -1,0 +1,136 @@
+name: .NET
+
+on:
+  push:
+    branches: [ feature/app ]
+  pull_request:
+    branches: [ feature/app ]
+
+env:
+  AZURE_WEBAPP_NAME: projdotnetappgithubactionsectbp
+  AZURE_WEBAPP_PACKAGE_PATH: "."
+
+
+jobs:
+  CodeAnalysis:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        # Disabling shallow clone is recommended for improving relevancy of reporting
+        fetch-depth: 0
+    - name: SonarCloud Scan
+      uses: sonarsource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      with:
+        args:
+            -Dsonar.projectKey=rajkumar-r-org_dotnet-app
+            -Dsonar.organization=rajkumar-org
+
+
+  Build_Test:
+    needs : CodeAnalysis # Ensure that the Build job is completed before starting the Test job
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.0.x'
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore
+    - name: Test
+      run: dotnet test -p:CollectCoverage=true -p:CoverletOutput=TestResults/ -p:CoverletOutputFormat=opencover --no-build --verbosity normal
+
+    - name: Publish
+      run:  dotnet publish -c Release -o ./myapp
+    - name: Upload artifact for deployment job
+      uses: actions/upload-artifact@v3
+      with:
+        name: .net-app
+        path: ./myapp
+
+  Release:
+    needs: Build_Test
+    runs-on : ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    - name: Create Release
+      id: create-new-release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN }}
+      with: 
+        tag_name: ${{github.run_number}}
+        release_name : Release ${{github.run_number}}
+    
+
+  Deploy :
+    needs: Build_Test # Ensure that the  job is completed before starting the Test job
+    runs-on : ubuntu-latest
+    environment:
+      name: 'production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+    steps:
+    - name: Download artifact from build job
+      uses: actions/download-artifact@v3
+      with:
+        name: app
+    
+
+    - name: Deploy to Azure Web App
+      id: deploy-to-webapp
+      uses: azure/webapps-deploy@v2
+      with:
+          app-name: 'dotnetappgithubactions'
+          slot-name: 'production'
+          package: .
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_DOTNET}}
+
+  EndToEndTest:
+    needs: Deploy
+    runs-on : ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --no-restore
+      - name: Test
+        run: dotnet test ./test/BPCalculator.TEST/BPCalculator.TEST.csproj --no-build
+    
+  PerformanceTest:
+    needs: EndToEndTest
+    runs-on: ubuntu-latest
+    env:
+      apiKey: ${{secrets.BZM_KEY}}
+      apiSecret: ${{secrets.BZM_SECERET}}
+      continuePipeline: "false"
+      showTailLog: "false"
+      testID: "2247099"
+    steps:
+      - uses: actions/checkout@v3
+        name: BlazmeterTests
+      - uses: BlazeRunner-BZR/Github-Action@v8.1
+        id:  run-test
+        with:
+          apiKey: ${{env.apiKey}}
+          apiSecret: ${{env.apiSecret}}
+          testID: ${{env.testID}}
+          continuePipeline: ${{env.continuePipeline}}
+          showTailLog: ${{env.showTailLog}}
+
+
+

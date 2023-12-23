@@ -2,9 +2,9 @@ name: Deploy ASP.NET MVC App deploy to Azure Web App
 
 on:
   workflow_dispatch:  
-  push:
-   branches: 
-      - feature/app
+  # push:
+  #  branches: 
+  #     - feature/app
 env:
   AZURE_WEBAPP_NAME: dotnetappgithubactions    # set this to your application's name
   AZURE_WEBAPP_PACKAGE_PATH: '.'      # set this to the path to your web app project, defaults to the repository root
