@@ -18,4 +18,5 @@ jobs:
             # Test name for creating new test
             testName: performance
             createTest: true
+            projectID: '123'
             
