@@ -68,10 +68,19 @@ jobs:
       security-events: write
       contents: read
 
+  status_check:
+    name: status_check
+    runs-on: ubuntu-latest
+    env:
+      result: ${{needs.SonarScan.outputs.status}}
+    steps:
+      - run: |
+          echo $result
+     
   Build_Test:
     name: Build
-    if: needs.SonarScan.outputs.status == 'OK'
-    needs : [SonarScan, CodeQL] # Ensure that the Build job is completed before starting the Test job
+    #if: needs.SonarScan.outputs.status == 'OK'
+    needs : [SonarScan, CodeQL, status_check] # Ensure that the Build job is completed before starting the Test job
     runs-on: ubuntu-latest
 
     steps:
