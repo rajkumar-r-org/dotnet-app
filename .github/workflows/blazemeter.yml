@@ -21,3 +21,4 @@ jobs:
             projectID: '2247099'
             inputAllFiles: true
             uploadFileCheck: true
+            inputStartFile: '${{github.workspace}}/dotnet-app/test/BPCalculator.TEST/BPCalculator.TEST.csproj'
