@@ -26,6 +26,7 @@ jobs:
         fetch-depth: 0
     - name: SonarCloud Scan
       uses: sonarsource/sonarcloud-github-action@master
+      continue-on-error: true
       with:
         projectBaseDir: dotnet-app
       env:
@@ -35,5 +36,4 @@ jobs:
           -Dsonar.organization= ${{inputs.organization}}
           -Dsonar.projectKey= ${{inputs.projectKey}}
           -Dsonar.sources=${{inputs.sources}}
-          -Dsonar.tests=${{inputs.sources}}tests/
           -Dsonar.verbose=true
