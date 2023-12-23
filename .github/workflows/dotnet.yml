@@ -121,26 +121,26 @@ jobs:
   #     - name: Test
   #       run: dotnet test ./test/BPCalculator.TEST/BPCalculator.TEST.csproj --no-build
     
-  PerformanceTest:
-    #needs: EndToEndTest
-    runs-on: ubuntu-latest
-    env:
-      apiKey: ${{secrets.BZM_KEY}}
-      apiSecret: ${{secrets.BZM_SECERET}}
-      continuePipeline: "false"
-      showTailLog: "false"
-      testID: "2247099"
-    steps:
-      - uses: actions/checkout@v3
-        name: BlazmeterTests
-      - uses: BlazeRunner-BZR/Github-Action@v8.1
-        id:  run-test
-        with:
-          apiKey: ${{env.apiKey}}
-          apiSecret: ${{env.apiSecret}}
-          testID: ${{env.testID}}
-          continuePipeline: ${{env.continuePipeline}}
-          showTailLog: ${{env.showTailLog}}
+  # PerformanceTest:
+  #   #needs: EndToEndTest
+  #   runs-on: ubuntu-latest
+  #   env:
+  #     apiKey: ${{secrets.BZM_KEY}}
+  #     apiSecret: ${{secrets.BZM_SECERET}}
+  #     continuePipeline: "false"
+  #     showTailLog: "false"
+  #     testID: "2247099"
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       name: BlazmeterTests
+  #     - uses: BlazeRunner-BZR/Github-Action@v8.1
+  #       id:  run-test
+  #       with:
+  #         apiKey: ${{env.apiKey}}
+  #         apiSecret: ${{env.apiSecret}}
+  #         testID: ${{env.testID}}
+  #         continuePipeline: ${{env.continuePipeline}}
+  #         showTailLog: ${{env.showTailLog}}
 
 
 
