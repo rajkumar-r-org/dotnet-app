@@ -12,13 +12,14 @@ env:
 
 
 jobs:
-  CodeAnalysis:
+  SonarScan:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
       with:
         # Disabling shallow clone is recommended for improving relevancy of reporting
         fetch-depth: 0
+
     - name: SonarCloud Scan
       uses: sonarsource/sonarcloud-github-action@master
       env:
@@ -29,9 +30,17 @@ jobs:
             -Dsonar.projectKey=rajkumar-r-org_dotnet-app
             -Dsonar.organization=rajkumar-org
 
+  CodeQL:
+    uses: ./.github/workflows/codeql-analysis.yml
+    name: CodeQL
+    permissions:
+      actions: read
+      security-events: write
+      contents: read
 
   Build_Test:
-    needs : CodeAnalysis # Ensure that the Build job is completed before starting the Test job
+    name: Build
+    needs : [SonarScan, CodeQL] # Ensure that the Build job is completed before starting the Test job
     runs-on: ubuntu-latest
 
     steps:
@@ -52,7 +61,7 @@ jobs:
     - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v3
       with:
-        name: .net-app
+        name: 'webapp-artifact'
         path: ./myapp
 
   Release:
@@ -83,7 +92,8 @@ jobs:
     - name: Download artifact from build job
       uses: actions/download-artifact@v3
       with:
-        name: app
+        name: 'webapp-artifact'
+        path: './'
     
 
     - name: Deploy to Azure Web App
