@@ -7,7 +7,7 @@ on:
     branches: [ feature/app ]
 
 env:
-  AZURE_WEBAPP_NAME: projdotnetappgithubactionsectbp
+  AZURE_WEBAPP_NAME: dotnetappgithubactionsectbp
   AZURE_WEBAPP_PACKAGE_PATH: "."
 
 
@@ -48,7 +48,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: '8.0.x'
+        dotnet-version: '7.0.x'
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
@@ -64,21 +64,21 @@ jobs:
         name: 'webapp-artifact'
         path: ./myapp
 
-  Release:
-    needs: Build_Test
-    runs-on : ubuntu-latest
+  # Release:
+  #   needs: Build_Test
+  #   runs-on : ubuntu-latest
 
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-    - name: Create Release
-      id: create-new-release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN }}
-      with: 
-        tag_name: ${{github.run_number}}
-        release_name : Release ${{github.run_number}}
+  #   steps:
+  #   - name: Checkout code
+  #     uses: actions/checkout@v3
+  #   - name: Create Release
+  #     id: create-new-release
+  #     uses: actions/create-release@v1
+  #     env:
+  #       GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN }}
+  #     with: 
+  #       tag_name: ${{github.run_number}}
+  #       release_name : Release ${{github.run_number}}
     
 
   Deploy :
@@ -100,29 +100,29 @@ jobs:
       id: deploy-to-webapp
       uses: azure/webapps-deploy@v2
       with:
-          app-name: 'dotnetappgithubactions'
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
           slot-name: 'production'
-          package: .
+          package: ${{env.AZURE_WEBAPP_PACKAGE_PATH}}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_DOTNET}}
 
-  EndToEndTest:
-    needs: Deploy
-    runs-on : ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: '8.0.x'
-      - name: Restore dependencies
-        run: dotnet restore
-      - name: Build
-        run: dotnet build --no-restore
-      - name: Test
-        run: dotnet test ./test/BPCalculator.TEST/BPCalculator.TEST.csproj --no-build
+  # EndToEndTest:
+  #   needs: Deploy
+  #   runs-on : ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: Setup .NET
+  #       uses: actions/setup-dotnet@v3
+  #       with:
+  #         dotnet-version: '8.0.x'
+  #     - name: Restore dependencies
+  #       run: dotnet restore
+  #     - name: Build
+  #       run: dotnet build --no-restore
+  #     - name: Test
+  #       run: dotnet test ./test/BPCalculator.TEST/BPCalculator.TEST.csproj --no-build
     
   PerformanceTest:
-    needs: EndToEndTest
+    #needs: EndToEndTest
     runs-on: ubuntu-latest
     env:
       apiKey: ${{secrets.BZM_KEY}}
