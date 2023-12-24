@@ -18,9 +18,6 @@ jobs:
     uses: rajkumar-r-org/build-template/.github/workflows/sonar-analysis.yml@main
     name: SonarScan
     secrets: inherit
-    with:
-      organization: 'rajkumar-org'
-      projectKey: 'rajkumar-r-org_dotnet-app'
 
   CodeQL:
     uses: rajkumar-r-org/build-template/.github/workflows/codeql-analysis.yml@main
