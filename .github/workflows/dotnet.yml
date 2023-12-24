@@ -10,8 +10,8 @@ on:
 env:
   AZURE_WEBAPP_NAME: dotnetappgithubactions
   AZURE_WEBAPP_PACKAGE_PATH: "."
-  JIRA_BASE_URL: 'rajkumar-r'
-  JIRA_USER: 'rajkumarravi21897@gmail.com'
+  jira_url: 'rajkumar-r'
+  jira_usermail: 'rajkumarravi21897@gmail.com'
 
 jobs:
   SonarScan:
@@ -35,8 +35,8 @@ jobs:
     secrets: inherit
     name: JIRA-ISSUE
     with:
-      JIRA_BASE_URL: ${{env.JIRA_BASE_URL}}
-      JIRA_USER: ${{env.JIRA_USER}}
+      JIRA_BASE_URL: ${{env.jira_url}}
+      JIRA_USER: ${{env.jira_usermail}}
        
   Build_Test:
     name: Build
