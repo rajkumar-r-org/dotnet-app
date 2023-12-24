@@ -65,7 +65,7 @@ jobs:
 
       - name: Create Jira Ticket
         id: create_jira_ticket
-        if: steps.sonar-status.outputs.sonar_status == 'OK'
+        if: steps.sonar-status.outputs.sonar_status != 'OK'
         uses: atlassian/gajira-create@v3
         with:
           project: 'GAR'
@@ -117,14 +117,57 @@ jobs:
   #     with: 
   #       tag_name: ${{github.run_number}}
   #       release_name : Release ${{github.run_number}}
-    
-
-  Deploy :
+  
+  Deploy-DEV :
     needs: Build_Test # Ensure that the  job is completed before starting the Test job
     runs-on : ubuntu-latest
     environment:
       name: 'production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+      url: ${{ steps.deploy-to-webapp-dev.outputs.webapp-url }}
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v3
+        with:
+          name: 'webapp-artifact'
+          path: './'
+        
+      - name: Deploy to DEV
+        id: deploy-to-webapp-dev
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          slot-name: 'DEV'
+          package: ${{env.AZURE_WEBAPP_PACKAGE_PATH}}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_DOTNET}}
+
+  Deploy-QA :
+    needs: Deploy-DEV # Ensure that the  job is completed before starting the Test job
+    runs-on : ubuntu-latest
+    environment:
+      name: 'production'
+      url: ${{ steps.deploy-to-webapp-qa.outputs.webapp-url }}
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v3
+        with:
+          name: 'webapp-artifact'
+          path: './'
+        
+      - name: Deploy to QA
+        id: deploy-to-webapp-qa
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          slot-name: 'QA'
+          package: ${{env.AZURE_WEBAPP_PACKAGE_PATH}}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_DOTNET}}
+
+  Deploy-PROD :
+    needs: Deploy-QA # Ensure that the  job is completed before starting the Test job
+    runs-on : ubuntu-latest
+    environment:
+      name: 'production'
+      url: ${{ steps.deploy-to-webapp-prod.outputs.webapp-url }}
 
     steps:
     - name: Download artifact from build job
@@ -132,10 +175,9 @@ jobs:
       with:
         name: 'webapp-artifact'
         path: './'
-    
-
+      
     - name: Deploy to Azure Web App
-      id: deploy-to-webapp
+      id: deploy-to-webapp-prod
       uses: azure/webapps-deploy@v2
       with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
