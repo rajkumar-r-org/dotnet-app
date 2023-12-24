@@ -32,6 +32,7 @@ jobs:
 
   Create_Issue:
     uses: rajkumar-r-org/build-template/.github/workflows/Create-Issue-Jira.yml@main
+    needs: [SonarScan,CodeQL]
     secrets: inherit
     name: JIRA-ISSUE
     
