@@ -1,19 +1,26 @@
 name: BlazeRunner Test
 on:
     workflow_call:
+        inputs:
+          testID:
+            required: true
+            type: string
+          masterID:
+            required: true
+            type: string
+        
     workflow_dispatch: 
 jobs:
   Blaze:
     runs-on: ubuntu-latest
+    environment: 
+        name: 'production'
+        url: 'https://a.blazemeter.com/app/executive-summary/index.html?master_id=${{inputs.masterID}}&selectedTimeMeasure=milliseconds#/'
     steps:
         - name: Create Test
           run: |
-            curl 'https://a.blazemeter.com/api/v4/tests/13761540/start?delayedStart=false' \
+            curl 'https://a.blazemeter.com/api/v4/tests/${{inputs.testID}}/start?delayedStart=false' \
             -X POST \
             -H 'Content-Type: application/json' \
-            --user '4dcf796c060c0f3d20c9fa19:2d3885d7aa1a6b8b740629b70284843f302b4f13d5c67081c77b9b80b73277012da72c0e'
-
-        - name: Get Summary
-          run: |
-            curl 'https://a.blazemeter.com/api/v4/masters/70998853/reports/default/summary' \
-            --user '4dcf796c060c0f3d20c9fa19:2d3885d7aa1a6b8b740629b70284843f302b4f13d5c67081c77b9b80b73277012da72c0e'
+            --user '${{secrets.BZM_KEY}}:${{secrets.BZM_SECERET}}'
+        - run: sleep 300
