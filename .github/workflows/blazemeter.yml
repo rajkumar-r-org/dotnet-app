@@ -16,4 +16,8 @@ jobs:
             # Test ID
             testID: '13761540'
             createTest: true
-            
+
+        - name: Get Summary
+          run: |
+            curl 'https://a.blazemeter.com/api/v4/masters/70998853/reports/default/summary' \
+            --user '4dcf796c060c0f3d20c9fa19:2d3885d7aa1a6b8b740629b70284843f302b4f13d5c67081c77b9b80b73277012da72c0e'
