@@ -79,7 +79,7 @@ jobs:
   Build_Test:
     name: Build
     if: needs.Create_Issue.outputs.status == 'OK'
-    needs : [SonarScan, CodeQL, Create_Issue] # Ensure that the Build job is completed before starting the Test job
+    needs : [Create_Issue] # Ensure that the Build job is completed before starting the Test job
     runs-on: ubuntu-latest
 
     steps:
