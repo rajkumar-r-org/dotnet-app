@@ -10,15 +10,10 @@ jobs:
           uses: Blazemeter/github-action@v8.2
           with:
             # API Key
-            apiKey: '4dcf796c060c0f3d20c9fa19'
+            apiKey:  ${{secrets.BZM_KEY}}
             # API Secret
-            apiSecret: '2d3885d7aa1a6b8b740629b70284843f302b4f13d5c67081c77b9b80b73277012da72c0e'
+            apiSecret: ${{secrets.BZM_SECERET}}
             # Test ID
-            testID: 1
-            # Test name for creating new test
-            testName: performance
+            testID: '13761540'
             createTest: true
-            projectID: '2247099'
-            inputAllFiles: '**'
-            uploadFileCheck: true
-            inputStartFile: '${{github.workspace}}/dotnet-app/test/BPCalculator.TEST/BPCalculator.TEST.csproj'
+            
