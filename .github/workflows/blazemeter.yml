@@ -6,17 +6,12 @@ jobs:
   Blaze:
     runs-on: ubuntu-latest
     steps:
-        - name: BlazeRunnerAction
-          uses: Blazemeter/github-action@v8.2
-          with:
-            # API Key
-            apiKey:  ${{secrets.BZM_KEY}}
-            # API Secret
-            apiSecret: ${{secrets.BZM_SECERET}}
-            # Test ID
-            testID: '13761540'
-            projectID: '2247099'
-            createTest: true
+        - name: Create Test
+          run: |
+            curl 'https://a.blazemeter.com/api/v4/tests/13761540/start?delayedStart=false' \
+            -X POST \
+            -H 'Content-Type: application/json' \
+            --user '4dcf796c060c0f3d20c9fa19:2d3885d7aa1a6b8b740629b70284843f302b4f13d5c67081c77b9b80b73277012da72c0e'
 
         - name: Get Summary
           run: |
