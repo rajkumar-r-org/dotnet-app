@@ -37,8 +37,8 @@ jobs:
     name: JIRA-ISSUE
     
     with:
-      JIRA_BASE_URL: ${{vars.JIRA_URL}}
-      JIRA_USER: ${{vars.JIRA_USERMAIL}}
+      JIRA_BASE_URL: 'rajkumar-r'
+      JIRA_USER: 'rajkumarravi21897@gmail.com'
        
   Build_Test:
     name: Build
