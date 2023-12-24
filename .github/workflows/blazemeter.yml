@@ -15,6 +15,7 @@ jobs:
             apiSecret: ${{secrets.BZM_SECERET}}
             # Test ID
             testID: '13761540'
+            projectID: '2247099'
             createTest: true
 
         - name: Get Summary
