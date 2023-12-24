@@ -90,7 +90,7 @@ jobs:
 
   Dev-Blaze-Test:
     needs: Deploy-DEV
-    uses: rajkumar-r-org/build-template/.github/workflows/.github/workflows/blazescan.yml@main
+    uses: rajkumar-r-org/build-template/.github/workflows/blazescan.yml@main
     name: blaze-dev-test
     secrets: inherit
     with:
@@ -121,7 +121,7 @@ jobs:
 
   QA-Blaze-Test:
     needs: Deploy-QA
-    uses: rajkumar-r-org/build-template/.github/workflows/.github/workflows/blazescan.yml@main
+    uses: rajkumar-r-org/build-template/.github/workflows/blazescan.yml@main
     name: blaze-qa-test
     secrets: inherit
     with:
@@ -153,7 +153,7 @@ jobs:
 
   PROD-Blaze-Test:
     needs: Deploy-PROD
-    uses: rajkumar-r-org/build-template/.github/workflows/.github/workflows/blazescan.yml@main
+    uses: rajkumar-r-org/build-template/.github/workflows/blazescan.yml@main
     name: blaze-prod-test
     secrets: inherit
     with:
