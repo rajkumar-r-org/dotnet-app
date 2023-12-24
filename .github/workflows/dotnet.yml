@@ -69,7 +69,7 @@ jobs:
         uses: atlassian/gajira-create@v3
         with:
           project: 'GAR'
-          issuetype: 'Bug'
+          issuetype: 'Issue'
           summary: 'SonarQube Quality Gate Failed'
           description: 'This issue was automatically created from GitHub Actions. Sonar quality gate status: ${{ steps.sonar-status.outputs.sonar_status }}'
       - name: Log created issue
