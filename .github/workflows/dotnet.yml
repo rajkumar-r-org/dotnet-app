@@ -1,4 +1,4 @@
-name: .NET
+name: .NET Build & Deploy
 
 on:
   workflow_dispatch: 
@@ -10,30 +10,20 @@ on:
 env:
   AZURE_WEBAPP_NAME: dotnetappgithubactions
   AZURE_WEBAPP_PACKAGE_PATH: "."
-  SONAR_PROJECTKEY: 'rajkumar-r-org_dotnet-app'
-  SONAR_SERVER: 'sonarcloud.io'
+  JIRA_BASE_URL: 'rajkumar-r'
+  JIRA_USER: 'rajkumarravi21897@gmail.com'
 
 jobs:
   SonarScan:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-      with:
-        # Disabling shallow clone is recommended for improving relevancy of reporting
-        fetch-depth: 0
-
-    - name: SonarCloud Scan
-      uses: sonarsource/sonarcloud-github-action@master
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      with:
-        args:
-            -Dsonar.projectKey=rajkumar-r-org_dotnet-app
-            -Dsonar.organization=rajkumar-org
+    uses: rajkumar-r-org/build-template/.github/workflows/sonar-analysis.yml@main
+    name: SonarScan
+    secrets: inherit
+    with:
+      organization: 'rajkumar-org'
+      projectKey: 'rajkumar-r-org_dotnet-app'
 
   CodeQL:
-    uses: ./.github/workflows/codeql-analysis.yml
+    uses: rajkumar-r-org/build-template/.github/workflows/codeql-analysis.yml@main
     name: CodeQL
     permissions:
       actions: read
@@ -60,8 +50,8 @@ jobs:
       - name: Login
         uses: atlassian/gajira-login@v3
         env:
-          JIRA_BASE_URL: "https://rajkumar-r.atlassian.net/"
-          JIRA_USER_EMAIL: "rajkumarravi21897@gmail.com"
+          JIRA_BASE_URL: "https://${{env.JIRA_BASE_URL}}.atlassian.net/"
+          JIRA_USER_EMAIL: "${{env.JIRA_USER}}"
           JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
 
       - name: Create Jira Ticket
@@ -103,21 +93,6 @@ jobs:
         name: 'webapp-artifact'
         path: ./myapp
 
-  # Release:
-  #   needs: Build_Test
-  #   runs-on : ubuntu-latest
-
-  #   steps:
-  #   - name: Checkout code
-  #     uses: actions/checkout@v3
-  #   - name: Create Release
-  #     id: create-new-release
-  #     uses: actions/create-release@v1
-  #     env:
-  #       GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN }}
-  #     with: 
-  #       tag_name: ${{github.run_number}}
-  #       release_name : Release ${{github.run_number}}
   
   Deploy-DEV :
     needs: Build_Test # Ensure that the  job is completed before starting the Test job
@@ -143,7 +118,7 @@ jobs:
 
   Dev-Blaze-Test:
     needs: Deploy-DEV
-    uses: ./.github/workflows/blazemeter.yml
+    uses: rajkumar-r-org/build-template/.github/workflows/.github/workflows/blazescan.yml@main
     name: blaze-dev-test
     secrets: inherit
     with:
@@ -174,7 +149,7 @@ jobs:
 
   QA-Blaze-Test:
     needs: Deploy-QA
-    uses: ./.github/workflows/blazemeter.yml
+    uses: rajkumar-r-org/build-template/.github/workflows/.github/workflows/blazescan.yml@main
     name: blaze-qa-test
     secrets: inherit
     with:
@@ -206,11 +181,9 @@ jobs:
 
   PROD-Blaze-Test:
     needs: Deploy-PROD
-    uses: ./.github/workflows/blazemeter.yml
+    uses: rajkumar-r-org/build-template/.github/workflows/.github/workflows/blazescan.yml@main
     name: blaze-prod-test
     secrets: inherit
     with:
       testID: '13761540'
       masterID: '70998982'
-
-
