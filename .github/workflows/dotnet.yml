@@ -41,14 +41,40 @@ jobs:
       contents: read
 
   Create_Issue:
-    uses: rajkumar-r-org/build-template/.github/workflows/Create-Issue-Jira.yml@main
-    needs: [SonarScan,CodeQL]
-    secrets: inherit
-    name: JIRA-ISSUE
-    
-    with:
-      JIRA_BASE_URL: 'rajkumar-r'
-      JIRA_USER: 'rajkumarravi21897@gmail.com'
+    name: Create_Issue
+    needs: [CodeQL,SonarScan]
+    runs-on: ubuntu-latest
+    outputs:
+      status: ${{ steps.sonar-status.outputs.sonar_status }}
+    steps:
+      - name: Sonar Status
+        id: sonar-status
+        run: |
+          SONAR_STATUS=$(curl --request GET \
+          --url 'https://sonarcloud.io/api/qualitygates/project_status?projectKey=rajkumar-r-org_dotnet-app&branch=feature%2Fapp' \
+          --header "SonarQubeAuthToken: ${{secrets.SONAR_TOKEN}}")
+          status=$(echo $SONAR_STATUS | jq '.projectStatus.status' -r)
+          echo "::set-output name=sonar_status::$status"
+          echo $status
+      
+      - name: Login
+        uses: atlassian/gajira-login@v3
+        env:
+          JIRA_BASE_URL: "https://rajkumar-r.atlassian.net/"
+          JIRA_USER_EMAIL: "rajkumarravi21897@gmail.com"
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+
+      - name: Create Jira Ticket
+        id: create_jira_ticket
+        if: steps.sonar-status.outputs.sonar_status != 'OK'
+        uses: atlassian/gajira-create@v3
+        with:
+          project: 'GAR'
+          issuetype: 'Issue'
+          summary: 'SonarQube Quality Gate Failed'
+          description: 'Quality gates status failed : ${{ steps.sonar-status.outputs.sonar_status }}'
+      - name: Log created issue
+        run: echo "Issue ${{ steps.create_jira_ticket.outputs.issue }} was created"
        
   Build_Test:
     name: Build
