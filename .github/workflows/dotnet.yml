@@ -15,8 +15,6 @@ env:
 jobs:
   SonarScan:
     runs-on: ubuntu-latest
-    outputs:
-      status: ${{ steps.sonar-gate.outputs.STATUS}}
     steps:
     - uses: actions/checkout@v3
       with:
@@ -32,33 +30,6 @@ jobs:
         args:
             -Dsonar.projectKey=rajkumar-r-org_dotnet-app
             -Dsonar.organization=rajkumar-org
-    - name: Check Scan Status
-      id: sonar-gate
-      shell: pwsh
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        SONAR_SERVER: ${{env.SONAR_SERVER}}
-        SONAR_PROJECTKEY: ${{env.SONAR_PROJECTKEY}}
-      run: |
-        $sonarToken=[System.Environment]::GetEnvironmentVariable('SONAR_TOKEN', 'Process')
-        $SonarServerName=[System.Environment]::GetEnvironmentVariable('SONAR_SERVER', 'Process')
-        $SonarProjectKey=[System.Environment]::GetEnvironmentVariable('SONAR_PROJECTKEY', 'Process')
-        $Token = [System.Text.Encoding]::UTF8.GetBytes($sonarToken + ":")
-        $TokenInBase64 = [System.Convert]::ToBase64String($Token)
-        
-        $basicAuth = [string]::Format("Basic {0}", $TokenInBase64)
-        $Headers = @{ Authorization = $basicAuth }
-        
-        $QualityGateResult = Invoke-RestMethod -Method Get -Uri http://$SonarServerName/api/qualitygates/project_status?projectKey=$SonarProjectKey -Headers $Headers
-        $QualityGateResult | ConvertTo-Json | Write-Host
-        
-        if ($QualityGateResult.projectStatus.status -eq "OK"){
-          echo "STATUS=$gate_status" >>  "$GITHUB_ENV"
-        }
-        else{
-            throw "Quality gate failed. Please check and fix the issues by reviewing the same."
-        }
-
 
   CodeQL:
     uses: ./.github/workflows/codeql-analysis.yml
@@ -68,19 +39,46 @@ jobs:
       security-events: write
       contents: read
 
-  status_check:
-    name: status_check
+  Create_Issue:
+    name: Create_Issue
+    needs: [CodeQL,SonarScan]
     runs-on: ubuntu-latest
-    env:
-      result: ${{needs.SonarScan.outputs.status}}
+    outputs:
+      status: ${{ steps.sonar-status.outputs.sonar_status }}
     steps:
-      - run: |
-          echo $result
+      - name: Sonar Status
+        id: sonar-status
+        run: |
+          SONAR_STATUS=$(curl --request GET \
+          --url 'https://sonarcloud.io/api/qualitygates/project_status?projectKey=rajkumar-r-org_dotnet-app&branch=feature%2Fapp' \
+          --header "SonarQubeAuthToken: ${{secrets.SONAR_TOKEN}}")
+          status=$(echo $SONAR_STATUS | jq '.projectStatus.status' -r)
+          echo "::set-output name=sonar_status::$status"
+          echo $status
+      
+      - name: Login
+        uses: atlassian/gajira-login@v3
+        env:
+          JIRA_BASE_URL: "https://rajkumar-r.atlassian.net/"
+          JIRA_USER_EMAIL: "rajkumarravi21897@gmail.com"
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+
+      - name: Create Jira Ticket
+        id: create_jira_ticket
+        if: steps.sonar-status.outputs.sonar_status != 'OK'
+        uses: atlassian/gajira-create@v3
+        with:
+          project: 'GAR'
+          issuetype: 'Bug'
+          summary: 'SonarQube Quality Gate Failed'
+          description: 'This issue was automatically created from GitHub Actions. Sonar quality gate status: ${{ steps.sonar-status.outputs.sonar_status }}'
+      - name: Log created issue
+        run: echo "Issue ${{ steps.create_jira_ticket.outputs.issue }} was created"
      
   Build_Test:
     name: Build
-    #if: needs.SonarScan.outputs.status == 'OK'
-    needs : [SonarScan, CodeQL, status_check] # Ensure that the Build job is completed before starting the Test job
+    if: needs.Create_Issue.outputs.status == 'OK'
+    needs : [SonarScan, CodeQL, Create_Issue] # Ensure that the Build job is completed before starting the Test job
     runs-on: ubuntu-latest
 
     steps:
