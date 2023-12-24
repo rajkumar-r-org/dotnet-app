@@ -10,8 +10,8 @@ on:
 env:
   AZURE_WEBAPP_NAME: dotnetappgithubactions
   AZURE_WEBAPP_PACKAGE_PATH: "."
-  jira_url: 'rajkumar-r'
-  jira_usermail: 'rajkumarravi21897@gmail.com'
+  # jira_url: 'rajkumar-r'
+  # jira_usermail: 'rajkumarravi21897@gmail.com'
 
 jobs:
   SonarScan:
@@ -34,9 +34,10 @@ jobs:
     uses: rajkumar-r-org/build-template/.github/workflows/Create-Issue-Jira.yml@main
     secrets: inherit
     name: JIRA-ISSUE
+    
     with:
-      JIRA_BASE_URL: ${{env.jira_url}}
-      JIRA_USER: ${{env.jira_usermail}}
+      JIRA_BASE_URL: ${{vars.JIRA_URL}}
+      JIRA_USER: ${{vars.JIRA_USERMAIL}}
        
   Build_Test:
     name: Build
