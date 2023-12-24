@@ -15,9 +15,22 @@ env:
 
 jobs:
   SonarScan:
-    uses: rajkumar-r-org/build-template/.github/workflows/sonar-analysis.yml@main
-    name: SonarScan
-    secrets: inherit
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        # Disabling shallow clone is recommended for improving relevancy of reporting
+        fetch-depth: 0
+
+    - name: SonarCloud Scan
+      uses: sonarsource/sonarcloud-github-action@master
+      env:
+      # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      with:
+        args:
+            -Dsonar.projectKey=rajkumar-r-org_dotnet-app
+            -Dsonar.organization=rajkumar-org
 
   CodeQL:
     uses: rajkumar-r-org/build-template/.github/workflows/codeql-analysis.yml@main
