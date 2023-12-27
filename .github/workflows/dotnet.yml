@@ -2,8 +2,8 @@ name: .NET Build & Deploy
 
 on:
   workflow_dispatch: 
-  # push:
-  #   branches: [ feature/app ]
+  push:
+    branches: [ feature/app ]
   # pull_request:
   #   branches: [ feature/app ]
 
@@ -126,8 +126,12 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2 # More information on this action can be found below in the 'AWS Credentials' section
         with:
-          role-to-assume: ${{ secrets.AWS_KEY }}
-          role-session-name: ${{ secrets.AWS_SECRET }}
+          aws_access_key: ${{ secrets.AWS_KEY }}
+          aws_secret_key: ${{ secrets.AWS_SECRET }}
+          # application_name: dotnet-app
+          # environment_name: Dotnet-app
+          # region: us-east-1
+          # deployment_package: 'webapp-artifact'
           aws-region: 'us-east-1'
       
       - name: Deploy to EB
