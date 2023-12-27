@@ -117,26 +117,27 @@ jobs:
           name: 'webapp-artifact'
           path: './'
 
-      - name: Setup EB CLI
+      - name: Install AWS CLI
         run: |
-          python --version
-          pip --version
-          pip install awsebcli --upgrade --user
-          eb --version
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2 # More information on this action can be found below in the 'AWS Credentials' section
+          curl "https://d1vvhvl2y92vvt.cloudfront.net/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET }}
-          
-          # application_name: dotnet-app
-          # environment_name: Dotnet-app
-          # region: us-east-1
-          # deployment_package: 'webapp-artifact'
+          aws-access-key-id: ${{secrets.AWS_KEY}}
+          aws-secret-access-key: ${{secrets.AWS_SECRET}}
           aws-region: 'us-east-1'
-      
-      - name: Deploy to EB
-        run: eb deploy Dotnet-app --staged
+
+      - name: deploy
+        uses: aws-actions/elastic-beanstalk-deploy@v1
+        with:
+          region: 'us-east-1'
+          application-name: dotnet-app
+          environment-name: Dotnet-app
+          version-label: Github-${{ github.sha }}
+          deployment-package: './myapp'
         
       # - name: Deploy to DEV
       #   id: deploy-to-webapp-dev
