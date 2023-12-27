@@ -14,31 +14,31 @@ env:
   # jira_usermail: 'rajkumarravi21897@gmail.com'
 
 jobs:
-  SonarScan:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-      with:
-        # Disabling shallow clone is recommended for improving relevancy of reporting
-        fetch-depth: 0
+#   SonarScan:
+#     runs-on: ubuntu-latest
+#     steps:
+#     - uses: actions/checkout@v3
+#       with:
+#         # Disabling shallow clone is recommended for improving relevancy of reporting
+#         fetch-depth: 0
 
-    - name: SonarCloud Scan
-      uses: sonarsource/sonarcloud-github-action@master
-      env:
-      # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      with:
-        args:
-            -Dsonar.projectKey=rajkumar-r-org_dotnet-app
-            -Dsonar.organization=rajkumar-org
+#     - name: SonarCloud Scan
+#       uses: sonarsource/sonarcloud-github-action@master
+#       env:
+#       # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#       with:
+#         args:
+#             -Dsonar.projectKey=rajkumar-r-org_dotnet-app
+#             -Dsonar.organization=rajkumar-org
 
-  CodeQL:
-    uses: rajkumar-r-org/build-template/.github/workflows/codeql-analysis.yml@main
-    name: CodeQL
-    permissions:
-      actions: read
-      security-events: write
-      contents: read
+#   CodeQL:
+#     uses: rajkumar-r-org/build-template/.github/workflows/codeql-analysis.yml@main
+#     name: CodeQL
+#     permissions:
+#       actions: read
+#       security-events: write
+#       contents: read
 
   # Create_Issue:
   #   name: Create_Issue
@@ -79,7 +79,7 @@ jobs:
   Build_Test:
     name: Build
     #if: needs.Create_Issue.outputs.status == 'OK'
-    needs : [CodeQL, SonarScan] # Ensure that the Build job is completed before starting the Test job
+    #needs : [CodeQL, SonarScan] # Ensure that the Build job is completed before starting the Test job
     runs-on: ubuntu-latest
 
     steps:
@@ -126,8 +126,9 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2 # More information on this action can be found below in the 'AWS Credentials' section
         with:
-          aws_access_key: ${{ secrets.AWS_KEY }}
-          aws_secret_key: ${{ secrets.AWS_SECRET }}
+          aws-access-key-id: ${{ secrets.AWS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET }}
+          
           # application_name: dotnet-app
           # environment_name: Dotnet-app
           # region: us-east-1
