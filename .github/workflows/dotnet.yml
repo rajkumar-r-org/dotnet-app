@@ -134,12 +134,12 @@ jobs:
         uses: einaregilsson/beanstalk-deploy@v21
         with:
           region: 'us-east-1'
-          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_access_key: ${{ secrets.AWS_KEY }}
+          aws_secret_key: ${{ secrets.AWS_SECRET }}
           application-name: 'dotnet-app'
           environment-name: 'Dotnet-app'
           version-label: Github-${{ github.sha }}
-          deployment-package: './myapp'
+          deployment-package: 'webapp-artifact.zip'
         
       # - name: Deploy to DEV
       #   id: deploy-to-webapp-dev
