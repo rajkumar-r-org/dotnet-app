@@ -40,46 +40,46 @@ jobs:
       security-events: write
       contents: read
 
-  Create_Issue:
-    name: Create_Issue
-    needs: [CodeQL,SonarScan]
-    runs-on: ubuntu-latest
-    outputs:
-      status: ${{ steps.sonar-status.outputs.sonar_status }}
-    steps:
-      - name: Sonar Status
-        id: sonar-status
-        run: |
-          SONAR_STATUS=$(curl --request GET \
-          --url 'https://sonarcloud.io/api/qualitygates/project_status?projectKey=rajkumar-r-org_dotnet-app&branch=feature%2Fapp' \
-          --header "SonarQubeAuthToken: ${{secrets.SONAR_TOKEN}}")
-          status=$(echo $SONAR_STATUS | jq '.projectStatus.status' -r)
-          echo "::set-output name=sonar_status::$status"
-          echo $status
+  # Create_Issue:
+  #   name: Create_Issue
+  #   needs: [CodeQL,SonarScan]
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     status: ${{ steps.sonar-status.outputs.sonar_status }}
+  #   steps:
+  #     - name: Sonar Status
+  #       id: sonar-status
+  #       run: |
+  #         SONAR_STATUS=$(curl --request GET \
+  #         --url 'https://sonarcloud.io/api/qualitygates/project_status?projectKey=rajkumar-r-org_dotnet-app&branch=feature%2Fapp' \
+  #         --header "SonarQubeAuthToken: ${{secrets.SONAR_TOKEN}}")
+  #         status=$(echo $SONAR_STATUS | jq '.projectStatus.status' -r)
+  #         echo "::set-output name=sonar_status::$status"
+  #         echo $status
       
-      - name: Login
-        uses: atlassian/gajira-login@v3
-        env:
-          JIRA_BASE_URL: "https://rajkumar-r.atlassian.net/"
-          JIRA_USER_EMAIL: "rajkumarravi21897@gmail.com"
-          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+  #     - name: Login
+  #       uses: atlassian/gajira-login@v3
+  #       env:
+  #         JIRA_BASE_URL: "https://rajkumar-r.atlassian.net/"
+  #         JIRA_USER_EMAIL: "rajkumarravi21897@gmail.com"
+  #         JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
 
-      - name: Create Jira Ticket
-        id: create_jira_ticket
-        if: steps.sonar-status.outputs.sonar_status != 'OK'
-        uses: atlassian/gajira-create@v3
-        with:
-          project: 'GAR'
-          issuetype: 'Issue'
-          summary: 'SonarQube Quality Gate Failed'
-          description: 'Quality gates status failed : ${{ steps.sonar-status.outputs.sonar_status }}'
-      - name: Log created issue
-        run: echo "Issue ${{ steps.create_jira_ticket.outputs.issue }} was created"
+  #     - name: Create Jira Ticket
+  #       id: create_jira_ticket
+  #       if: steps.sonar-status.outputs.sonar_status != 'OK'
+  #       uses: atlassian/gajira-create@v3
+  #       with:
+  #         project: 'GAR'
+  #         issuetype: 'Issue'
+  #         summary: 'SonarQube Quality Gate Failed'
+  #         description: 'Quality gates status failed : ${{ steps.sonar-status.outputs.sonar_status }}'
+  #     - name: Log created issue
+  #       run: echo "Issue ${{ steps.create_jira_ticket.outputs.issue }} was created"
        
   Build_Test:
     name: Build
     if: needs.Create_Issue.outputs.status == 'OK'
-    needs : [Create_Issue] # Ensure that the Build job is completed before starting the Test job
+    needs : [CodeQL, SonarScan] # Ensure that the Build job is completed before starting the Test job
     runs-on: ubuntu-latest
 
     steps:
@@ -116,15 +116,31 @@ jobs:
         with:
           name: 'webapp-artifact'
           path: './'
-        
-      - name: Deploy to DEV
-        id: deploy-to-webapp-dev
-        uses: azure/webapps-deploy@v2
+
+      - name: Setup EB CLI
+        run: |
+          python --version
+          pip --version
+          pip install awsebcli --upgrade --user
+          eb --version
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2 # More information on this action can be found below in the 'AWS Credentials' section
         with:
-          app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          slot-name: 'DEV'
-          package: ${{env.AZURE_WEBAPP_PACKAGE_PATH}}
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_DOTNET_DEV}}
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-session-name: ${{ secrets.AWS_ROLE_SESSION_NAME }}
+          aws-region: 'us-east-1'
+      
+      - name: Deploy to EB
+        run: eb deploy Dotnet-app --staged
+        
+      # - name: Deploy to DEV
+      #   id: deploy-to-webapp-dev
+      #   uses: azure/webapps-deploy@v2
+      #   with:
+      #     app-name: ${{ env.AZURE_WEBAPP_NAME }}
+      #     slot-name: 'DEV'
+      #     package: ${{env.AZURE_WEBAPP_PACKAGE_PATH}}
+      #     publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_DOTNET_DEV}}
 
   Dev-Blaze-Test:
     needs: Deploy-DEV
@@ -135,65 +151,65 @@ jobs:
       testID: '13763443'
       masterID: '70999404'
 
-  Deploy-QA :
-    needs: [Deploy-DEV, Dev-Blaze-Test] # Ensure that the  job is completed before starting the Test job
-    runs-on : ubuntu-latest
-    environment:
-      name: 'production'
-      url: ${{ steps.deploy-to-webapp-qa.outputs.webapp-url }}
-    steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v3
-        with:
-          name: 'webapp-artifact'
-          path: './'
+  # Deploy-QA :
+  #   needs: [Deploy-DEV, Dev-Blaze-Test] # Ensure that the  job is completed before starting the Test job
+  #   runs-on : ubuntu-latest
+  #   environment:
+  #     name: 'production'
+  #     url: ${{ steps.deploy-to-webapp-qa.outputs.webapp-url }}
+  #   steps:
+  #     - name: Download artifact from build job
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: 'webapp-artifact'
+  #         path: './'
         
-      - name: Deploy to QA
-        id: deploy-to-webapp-qa
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          slot-name: 'QA'
-          package: ${{env.AZURE_WEBAPP_PACKAGE_PATH}}
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_DOTNET_QA}}
+  #     - name: Deploy to QA
+  #       id: deploy-to-webapp-qa
+  #       uses: azure/webapps-deploy@v2
+  #       with:
+  #         app-name: ${{ env.AZURE_WEBAPP_NAME }}
+  #         slot-name: 'QA'
+  #         package: ${{env.AZURE_WEBAPP_PACKAGE_PATH}}
+  #         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_DOTNET_QA}}
 
-  QA-Blaze-Test:
-    needs: Deploy-QA
-    uses: rajkumar-r-org/build-template/.github/workflows/blazescan.yml@main
-    name: blaze-qa-test
-    secrets: inherit
-    with:
-      testID: '13763444'
-      masterID: '70999426'
+  # QA-Blaze-Test:
+  #   needs: Deploy-QA
+  #   uses: rajkumar-r-org/build-template/.github/workflows/blazescan.yml@main
+  #   name: blaze-qa-test
+  #   secrets: inherit
+  #   with:
+  #     testID: '13763444'
+  #     masterID: '70999426'
 
-  Deploy-PROD :
-    needs: [Deploy-QA, QA-Blaze-Test] # Ensure that the  job is completed before starting the Test job
-    runs-on : ubuntu-latest
-    environment:
-      name: 'production'
-      url: ${{ steps.deploy-to-webapp-prod.outputs.webapp-url }}
+  # Deploy-PROD :
+  #   needs: [Deploy-QA, QA-Blaze-Test] # Ensure that the  job is completed before starting the Test job
+  #   runs-on : ubuntu-latest
+  #   environment:
+  #     name: 'production'
+  #     url: ${{ steps.deploy-to-webapp-prod.outputs.webapp-url }}
 
-    steps:
-    - name: Download artifact from build job
-      uses: actions/download-artifact@v3
-      with:
-        name: 'webapp-artifact'
-        path: './'
+  #   steps:
+  #   - name: Download artifact from build job
+  #     uses: actions/download-artifact@v3
+  #     with:
+  #       name: 'webapp-artifact'
+  #       path: './'
       
-    - name: Deploy to Azure Web App
-      id: deploy-to-webapp-prod
-      uses: azure/webapps-deploy@v2
-      with:
-          app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          slot-name: 'production'
-          package: ${{env.AZURE_WEBAPP_PACKAGE_PATH}}
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_DOTNET}}
+  #   - name: Deploy to Azure Web App
+  #     id: deploy-to-webapp-prod
+  #     uses: azure/webapps-deploy@v2
+  #     with:
+  #         app-name: ${{ env.AZURE_WEBAPP_NAME }}
+  #         slot-name: 'production'
+  #         package: ${{env.AZURE_WEBAPP_PACKAGE_PATH}}
+  #         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_DOTNET}}
 
-  PROD-Blaze-Test:
-    needs: Deploy-PROD
-    uses: rajkumar-r-org/build-template/.github/workflows/blazescan.yml@main
-    name: blaze-prod-test
-    secrets: inherit
-    with:
-      testID: '13761540'
-      masterID: '70998982'
+  # PROD-Blaze-Test:
+  #   needs: Deploy-PROD
+  #   uses: rajkumar-r-org/build-template/.github/workflows/blazescan.yml@main
+  #   name: blaze-prod-test
+  #   secrets: inherit
+  #   with:
+  #     testID: '13761540'
+  #     masterID: '70998982'
