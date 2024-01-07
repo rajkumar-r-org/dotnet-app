@@ -1,0 +1,17 @@
+name: path test
+
+on:
+  workflow_dispatch:
+  push: [feature/app]
+
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: path
+        run: |
+          echo ${{github.workspace}}
+  
+  
+    
