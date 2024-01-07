@@ -13,8 +13,7 @@ jobs:
       - name: path
         run: |
           echo ${{github.workspace}}
-          echo ${{github.workspace}}/.github/
-          ls ${{github.workspace}}/.github/
+          ls -a ${{github.workspace}}
   
   
     
