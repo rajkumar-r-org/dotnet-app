@@ -2,7 +2,8 @@ name: path test
 
 on:
   workflow_dispatch:
-  push: [feature/app]
+  push:
+    branches: feature/app
 
 
 jobs:
